@@ -1,1 +1,3 @@
-# clone ve roi chay thui
+AI play gomuku game
+Code by java
+Using Mini-max algorithm
