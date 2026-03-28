@@ -1,3 +1,3 @@
 # AI play gomuku game
-# Code by java
+# Code by Java
 # Using Mini-max algorithm
