@@ -71,15 +71,47 @@ public class Board {
     }
 
     public List<Move> getPossibleMove(Board board) {
-        List<Move> move = new ArrayList<>();
-        for (int row = 0; row < board.SIZE; row++) {
-            for (int col = 0; col < board.SIZE; col++) {
-                if (board.getCellVal(row, col) == Cell.EMPTY) {
-                    Move newMove = new Move(row, col);
-                    move.add(newMove);
+        List<Move> moves = new ArrayList<>();
+        boolean[][] candidates = new boolean[SIZE][SIZE];
+
+        // Find all occupied cells and mark nearby cells as candidates
+        for (int row = 0; row < SIZE; row++) {
+            for (int col = 0; col < SIZE; col++) {
+                if (board.getCellVal(row, col) != Cell.EMPTY) {
+                    // Mark surrounding cells
+                    for (int dr = -2; dr <= 2; dr++) {
+                        for (int dc = -2; dc <= 2; dc++) {
+                            int nr = row + dr;
+                            int nc = col + dc;
+                            if (nr >= 0 && nr < SIZE && nc >= 0 && nc < SIZE) {
+                                candidates[nr][nc] = true;
+                            }
+                        }
+                    }
                 }
             }
         }
-        return move;
+
+        // Collect empty candidate cells
+        for (int row = 0; row < SIZE; row++) {
+            for (int col = 0; col < SIZE; col++) {
+                if (candidates[row][col] && board.getCellVal(row, col) == Cell.EMPTY) {
+                    moves.add(new Move(row, col));
+                }
+            }
+        }
+
+        // If no candidates (early game), return center area
+        if (moves.isEmpty()) {
+            for (int row = SIZE/2 - 2; row <= SIZE/2 + 2; row++) {
+                for (int col = SIZE/2 - 2; col <= SIZE/2 + 2; col++) {
+                    if (row >= 0 && row < SIZE && col >= 0 && col < SIZE && board.getCellVal(row, col) == Cell.EMPTY) {
+                        moves.add(new Move(row, col));
+                    }
+                }
+            }
+        }
+
+        return moves;
     }
 }

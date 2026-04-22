@@ -15,8 +15,19 @@ public class Evaluator {
             for (int col = 0; col < board.SIZE; col++) {
 
                 int player = board.getCellVal(row, col);
-                if (player == Cell.EMPTY)
+                if (player == Cell.EMPTY) {
+                    // Add center bonus for empty cells? No, for occupied.
                     continue;
+                }
+
+                // Add position bonus for center
+                int centerDistance = Math.abs(row - board.SIZE/2) + Math.abs(col - board.SIZE/2);
+                int positionBonus = Math.max(0, 7 - centerDistance);
+                if (player == Cell.AI) {
+                    score += positionBonus;
+                } else {
+                    score -= positionBonus;
+                }
 
                 for (int i = 0; i < 4; i++) {
                     if (visited[row][col][i])
@@ -25,10 +36,22 @@ public class Evaluator {
                     int[] d = dir[i];
 
                     int cnt = 1;
-                    cnt += count(board, row, col, d[0], d[1], player, i);
-                    cnt += count(board, row, col, -d[0], -d[1], player, i);
+                    int leftExtend = count(board, row, col, d[0], d[1], player, i);
+                    int rightExtend = count(board, row, col, -d[0], -d[1], player, i);
+                    cnt += leftExtend + rightExtend;
 
-                    int point = getPoint(cnt);
+                    // Check if open: check positions beyond the ends
+                    int leftEndRow = row + (leftExtend + 1) * d[0];
+                    int leftEndCol = col + (leftExtend + 1) * d[1];
+                    boolean leftOpen = leftEndRow >= 0 && leftEndRow < board.SIZE && leftEndCol >= 0 && leftEndCol < board.SIZE && board.getCellVal(leftEndRow, leftEndCol) == Cell.EMPTY;
+
+                    int rightEndRow = row - (rightExtend + 1) * d[0];
+                    int rightEndCol = col - (rightExtend + 1) * d[1];
+                    boolean rightOpen = rightEndRow >= 0 && rightEndRow < board.SIZE && rightEndCol >= 0 && rightEndCol < board.SIZE && board.getCellVal(rightEndRow, rightEndCol) == Cell.EMPTY;
+
+                    boolean isOpen = leftOpen || rightOpen;
+
+                    int point = getPoint(cnt, isOpen);
                     if (player == Cell.AI)
                         score += point;
                     else
@@ -55,17 +78,19 @@ public class Evaluator {
         return cnt;
     }
 
-    private int getPoint(int cnt) {
-        if (cnt == 1)
-            return 5;
-        if (cnt == 2)
-            return 15;
-        if (cnt == 3)
-            return 50;
-        if (cnt == 4)
-            return 100;
-        if (cnt == 5)
-            return 1000;
+    private boolean isOpen(Board board, int row, int col, int player) {
+        if (row < 0 || row >= board.SIZE || col < 0 || col >= board.SIZE) {
+            return false; // Out of bounds, not open
+        }
+        return board.getCellVal(row, col) == Cell.EMPTY;
+    }
+
+    private int getPoint(int cnt, boolean isOpen) {
+        if (cnt == 1) return isOpen ? 10 : 5;
+        if (cnt == 2) return isOpen ? 30 : 15;
+        if (cnt == 3) return isOpen ? 100 : 50;
+        if (cnt == 4) return isOpen ? 500 : 100;
+        if (cnt == 5) return 10000; // Win
         return 0;
     }
 }

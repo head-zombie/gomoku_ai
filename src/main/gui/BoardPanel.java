@@ -16,7 +16,7 @@ import main.core.Cell;
 public class BoardPanel extends JPanel {
     private Board board;
     private GameController gameController;
-    public static final int CELL_SIZE = 30;
+    public static final int CELL_SIZE = 60;
     public static final int OFFSET = 20;
 
     public BoardPanel(Board board, GameController gameController) {
